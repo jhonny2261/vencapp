@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Vencimientos — Módulo Móvil</title>
+    <script src="https://unpkg.com/html5-qrcode"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f5f5f5;
+            padding-bottom: 80px;
+        }
+
+        /* ── Header ── */
+        .header {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            color: white;
+            padding: 16px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.15);
+        }
+        .header h1  { font-size: 19px; margin-bottom: 3px; }
+        .user-info  { font-size: 13px; opacity: .9; }
+
+        /* ── Layout ── */
+        .container {
+            padding: 16px;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .card {
+            background: white;
+            border-radius: 14px;
+            padding: 18px;
+            margin-bottom: 16px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+        }
+        .card-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* ── Formulario ── */
+        .form-group { margin-bottom: 14px; }
+        label { display: block; margin-bottom: 5px; color: #555; font-size: 13px; font-weight: 600; }
+        input, select, textarea {
+            width: 100%;
+            padding: 11px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: border .25s;
+        }
+        input:focus, select:focus, textarea:focus { outline: none; border-color: #f39c12; }
+
+        /* ── Botones ── */
+        .btn {
+            width: 100%;
+            padding: 13px;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all .25s;
+        }
+        .btn-primary  { background: linear-gradient(135deg, #f39c12, #e67e22); color: white; }
+        .btn-primary:hover  { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(243,156,18,.35); }
+        .btn-secondary { background: #6c757d; color: white; margin-top: 10px; }
+        .btn-scan     { background: #28a745; color: white; margin-bottom: 12px; }
+        .btn-danger   { background: #dc3545; color: white; margin-top: 8px; }
+        .btn-success  { background: #1a7a3e; color: white; }
+
+        /* ── Escáner ── */
+        #scanner-container { width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 14px; display: none; }
+        #reader { width: 100%; }
+
+        /* ── Alertas ── */
+        .alert { padding: 13px 16px; border-radius: 8px; margin-bottom: 16px; display: none; font-size: 14px; }
+        .alert-success { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .alert-error   { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+
+        /* ── Info del producto encontrado ── */
+        .producto-info {
+            background: #e7f3ff;
+            border: 1px solid #b8d4f0;
+            padding: 14px;
+            border-radius: 8px;
+            margin-bottom: 14px;
+            display: none;
+        }
+        .producto-info h3 { color: #0066cc; margin-bottom: 4px; font-size: 15px; }
+        .producto-info p  { color: #555; font-size: 13px; }
+
+        /* ── Modal: producto no encontrado ── */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.55);
+            z-index: 200;
+            justify-content: center;
+            align-items: flex-end;
+        }
+        .modal-overlay.show { display: flex; }
+        .modal-box {
+            background: white;
+            border-radius: 20px 20px 0 0;
+            padding: 24px 20px;
+            width: 100%;
+            max-width: 500px;
+            animation: slideUp .25s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+        .modal-title { font-size: 17px; font-weight: bold; color: #333; margin-bottom: 8px; }
+        .modal-sub   { font-size: 13px; color: #666; margin-bottom: 18px; }
+        .modal-codigo { font-weight: bold; color: #e67e22; }
+
+        /* ── Loading ── */
+        .loading { display: none; text-align: center; padding: 16px; }
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #f39c12;
+            border-radius: 50%;
+            width: 36px; height: 36px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ── Login ── */
+        .login-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+        }
+        .login-card {
+            background: white;
+            border-radius: 20px;
+            padding: 36px;
+            max-width: 380px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        .login-card h1 { text-align: center; margin-bottom: 24px; color: #333; font-size: 22px; }
+        .login-error   { color: #dc3545; font-size: 13px; text-align: center; margin-bottom: 10px; min-height: 18px; }
+
+        /* ── Nav ── */
+        .bottom-nav {
+            position: fixed; bottom: 0; left: 0; right: 0;
+            background: white;
+            padding: 12px 20px;
+            box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-around;
+        }
+        .nav-btn { background: none; border: none; font-size: 22px; cursor: pointer; padding: 8px; }
+
+        #app { display: none; }
+
+        /* Precio inline */
+        .precio-tag { font-size: 12px; color: #888; margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     LOGIN
+══════════════════════════════════════ -->
+<div id="login-screen" class="login-container">
+    <div class="login-card">
+        <h1>📱 Control de Vencimientos Móvil</h1>
+        <div class="login-error" id="login-error"></div>
+        <form id="login-form">
+            <div class="form-group">
+                <label>Usuario</label>
+                <input type="text" id="login-user" autocomplete="username" required>
+            </div>
+            <div class="form-group">
+                <label>Contraseña</label>
+                <input type="password" id="login-pass" autocomplete="current-password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Iniciar Sesión</button>
+        </form>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     APP PRINCIPAL
+══════════════════════════════════════ -->
+<div id="app">
+    <div class="header">
+        <h1>📱 Registro de Vencimientos</h1>
+        <div class="user-info" id="user-info"></div>
+    </div>
+
+    <div class="container">
+        <div class="alert alert-success" id="alert-success"></div>
+        <div class="alert alert-error"   id="alert-error"></div>
+        <div class="loading" id="loading"><div class="spinner"></div><p>Procesando...</p></div>
+
+        <!-- Buscar producto -->
+        <div class="card">
+            <div class="card-title">🔍 Buscar Producto</div>
+            <button class="btn btn-scan" id="btn-scan">📷 Escanear Código de Barras</button>
+            <div id="scanner-container"><div id="reader"></div></div>
+            <div class="form-group">
+                <label>O ingresa el código manualmente:</label>
+                <input type="text" id="codigo-producto" placeholder="Código del producto"
+                       oninput="this.value = this.value.toUpperCase()">
+            </div>
+            <button class="btn btn-secondary" id="btn-buscar">🔎 Buscar Producto</button>
+        </div>
+
+        <!-- Producto encontrado -->
+        <div class="producto-info" id="producto-info">
+            <h3 id="producto-nombre"></h3>
+            <p  id="producto-codigo"></p>
+            <p  class="precio-tag" id="producto-precio"></p>
+        </div>
+
+        <!-- Formulario de vencimiento -->
+        <form id="form-vencimiento" style="display:none;">
+            <div class="card">
+                <div class="card-title">📅 Datos del Vencimiento</div>
+
+                <div class="form-group">
+                    <label>Fecha de Vencimiento *</label>
+                    <input type="date" id="fecha-vencimiento" required>
+                </div>
+                <div class="form-group">
+                    <label>Cantidad de Unidades</label>
+                    <input type="number" id="cantidad" value="1" min="1">
+                </div>
+                <div class="form-group">
+                    <label>Ubicación (Pasillo / Estante)</label>
+                    <input type="text" id="ubicacion" placeholder="Ej: Pasillo 3, Estante B">
+                </div>
+                <div class="form-group">
+                    <label>Lote (Opcional)</label>
+                    <input type="text" id="lote" placeholder="Número de lote">
+                </div>
+                <div class="form-group">
+                    <label>Observaciones</label>
+                    <textarea id="observaciones" rows="2" placeholder="Notas adicionales..."></textarea>
+                </div>
+
+                <button type="submit" class="btn btn-primary">✓ Registrar Vencimiento</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="bottom-nav">
+        <button class="nav-btn" title="Reiniciar" onclick="resetForm()">🔄</button>
+        <button class="nav-btn" title="Inicio"    onclick="window.location.href='index.html'">🏠</button>
+        <button class="nav-btn" title="Salir"     id="btn-logout">🚪</button>
+    </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     MODAL: Producto no encontrado
+══════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-no-encontrado">
+    <div class="modal-box">
+        <div class="modal-title">⚠️ Producto no encontrado</div>
+        <div class="modal-sub">
+            El código <span class="modal-codigo" id="modal-codigo-texto"></span>
+            no está en el catálogo. ¿Qué deseas hacer?
+        </div>
+
+        <!-- Opción A: Crear producto nuevo -->
+        <div id="form-crear-producto">
+            <div class="form-group">
+                <label>Descripción del producto *</label>
+                <input type="text" id="nuevo-descripcion" placeholder="Ej: Leche entera 1L"
+                       style="text-transform:uppercase">
+            </div>
+            <div class="form-group">
+                <label>Precio (opcional)</label>
+                <input type="number" id="nuevo-precio" placeholder="0.00" min="0" step="0.01">
+            </div>
+            <div class="form-group">
+                <label>Cantidad de unidades</label>
+                <input type="number" id="nuevo-cantidad" value="1" min="1">
+            </div>
+            <div class="form-group">
+                <label>Fecha de Vencimiento *</label>
+                <input type="date" id="nuevo-fecha">
+            </div>
+            <div class="form-group">
+                <label>Ubicación</label>
+                <input type="text" id="nuevo-ubicacion" placeholder="Ej: Pasillo 3">
+            </div>
+            <button class="btn btn-success" onclick="crearYRegistrar()">✓ Crear producto y registrar</button>
+            <button class="btn btn-secondary" onclick="usarSinCatalogo()">Registrar sin guardar en catálogo</button>
+            <button class="btn btn-danger"   onclick="cerrarModal()">Cancelar</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const API = window.location.origin;
+    let currentUser  = null;
+    let currentToken = null;
+    let currentProductCode = null;
+    let currentProductDesc = null;
+    let html5QrcodeScanner;
+
+    // ── Helpers de fetch con JWT ─────────────────────────────
+    function authHeaders() {
+        return { 'Content-Type': 'application/json', 'Authorization': `Bearer ${currentToken}` };
+    }
+
+    async function apiFetch(url, opts = {}) {
+        opts.headers = { ...authHeaders(), ...(opts.headers || {}) };
+        const r = await fetch(API + url, opts);
+        if (r.status === 401 || r.status === 403) { logout(); return null; }
+        return r.json();
+    }
+
+    // ── LOGIN ────────────────────────────────────────────────
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const usuario = document.getElementById('login-user').value.trim();
+        const clave   = document.getElementById('login-pass').value;
+
+        try {
+            const r    = await fetch(`${API}/api/login`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ usuario, clave })
+            });
+            const data = await r.json();
+
+            if (data.success) {
+                currentUser  = data.usuario;
+                currentToken = data.token;
+                localStorage.setItem('venccom_user',  JSON.stringify(currentUser));
+                localStorage.setItem('venccom_token', currentToken);
+                mostrarApp();
+            } else {
+                document.getElementById('login-error').textContent = data.message || 'Credenciales incorrectas.';
+            }
+        } catch {
+            document.getElementById('login-error').textContent = 'Error de conexión con el servidor.';
+        }
+    });
+
+    // ── Verificar sesión guardada ────────────────────────────
+    const savedUser  = localStorage.getItem('venccom_user');
+    const savedToken = localStorage.getItem('venccom_token');
+    if (savedUser && savedToken) {
+        currentUser  = JSON.parse(savedUser);
+        currentToken = savedToken;
+        mostrarApp();
+    }
+
+    function mostrarApp() {
+        document.getElementById('login-screen').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        document.getElementById('user-info').textContent = `👤 ${currentUser.nombreCompleto || currentUser.nombre}`;
+    }
+
+    function logout() {
+        localStorage.removeItem('venccom_user');
+        localStorage.removeItem('venccom_token');
+        location.reload();
+    }
+    document.getElementById('btn-logout').addEventListener('click', logout);
+
+    // ── ESCÁNER ──────────────────────────────────────────────
+    document.getElementById('btn-scan').addEventListener('click', () => {
+        const container = document.getElementById('scanner-container');
+        if (!container.style.display || container.style.display === 'none') {
+            container.style.display = 'block';
+            html5QrcodeScanner = new Html5Qrcode('reader');
+            Html5Qrcode.getCameras().then(cameras => {
+                if (cameras && cameras.length) {
+                    const camId = cameras.length > 1 ? cameras[1].id : cameras[0].id;
+                    html5QrcodeScanner.start(
+                        camId,
+                        { fps: 10, qrbox: { width: 240, height: 240 } },
+                        (codigo) => {
+                            document.getElementById('codigo-producto').value = codigo;
+                            detenerScanner();
+                            buscarProducto(codigo);
+                        }
+                    ).catch(() => {
+                        showError('No se pudo acceder a la cámara. Ingresa el código manualmente.');
+                        detenerScanner();
+                    });
+                } else {
+                    showError('No se detectaron cámaras.');
+                    detenerScanner();
+                }
+            }).catch(() => {
+                showError('Permiso de cámara denegado. Usa Chrome o ingresa el código manualmente.');
+                detenerScanner();
+            });
+        } else {
+            detenerScanner();
+        }
+    });
+
+    function detenerScanner() {
+        if (html5QrcodeScanner) {
+            html5QrcodeScanner.stop().catch(() => {}).then(() => {
+                document.getElementById('scanner-container').style.display = 'none';
+            });
+        }
+    }
+
+    // ── BUSCAR PRODUCTO ──────────────────────────────────────
+    document.getElementById('btn-buscar').addEventListener('click', () => {
+        const codigo = document.getElementById('codigo-producto').value.trim();
+        if (codigo) buscarProducto(codigo);
+        else showError('Ingresa un código de producto.');
+    });
+
+    document.getElementById('codigo-producto').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            const codigo = e.target.value.trim();
+            if (codigo) buscarProducto(codigo);
+        }
+    });
+
+    async function buscarProducto(codigo) {
+        showLoading(true);
+        try {
+            const data = await apiFetch(`/api/productos/${encodeURIComponent(codigo)}`);
+            if (!data) return;
+
+            if (data.success) {
+                currentProductCode = data.producto.codigo;
+                currentProductDesc = data.producto.descripcion;
+                mostrarProductoEncontrado(data.producto);
+            } else {
+                // ← Producto no encontrado → abrir modal
+                abrirModal(codigo);
+            }
+        } catch {
+            showError('Error de conexión al buscar el producto.');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    function mostrarProductoEncontrado(producto) {
+        document.getElementById('producto-info').style.display    = 'block';
+        document.getElementById('producto-nombre').textContent    = producto.descripcion;
+        document.getElementById('producto-codigo').textContent    = `Código: ${producto.codigo}`;
+        document.getElementById('producto-precio').textContent    = producto.precio > 0 ? `Precio: $${parseFloat(producto.precio).toFixed(2)}` : '';
+        document.getElementById('form-vencimiento').style.display = 'block';
+
+        // Fecha mínima: mañana
+        const manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        document.getElementById('fecha-vencimiento').min = manana.toISOString().split('T')[0];
+    }
+
+    // ── MODAL: producto no encontrado ────────────────────────
+    function abrirModal(codigo) {
+        document.getElementById('modal-codigo-texto').textContent = codigo;
+        document.getElementById('nuevo-descripcion').value = '';
+        document.getElementById('nuevo-precio').value      = '';
+        document.getElementById('nuevo-cantidad').value    = '1';
+        document.getElementById('nuevo-fecha').value       = '';
+        document.getElementById('nuevo-ubicacion').value   = '';
+
+        // Fecha mínima en modal
+        const manana = new Date();
+        manana.setDate(manana.getDate() + 1);
+        document.getElementById('nuevo-fecha').min = manana.toISOString().split('T')[0];
+
+        document.getElementById('modal-no-encontrado').classList.add('show');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modal-no-encontrado').classList.remove('show');
+    }
+
+    // Opción 1: Crear el producto en el catálogo y registrar vencimiento
+    async function crearYRegistrar() {
+        const codigo      = document.getElementById('codigo-producto').value.trim().toUpperCase();
+        const descripcion = document.getElementById('nuevo-descripcion').value.trim().toUpperCase();
+        const precio      = document.getElementById('nuevo-precio').value;
+        const fecha       = document.getElementById('nuevo-fecha').value;
+        const cantidad    = document.getElementById('nuevo-cantidad').value;
+        const ubicacion   = document.getElementById('nuevo-ubicacion').value.trim();
+
+        if (!descripcion) { showError('La descripción es requerida.'); return; }
+        if (!fecha)       { showError('La fecha de vencimiento es requerida.'); return; }
+
+        showLoading(true);
+        try {
+            // 1. Crear el producto en el catálogo
+            const rProd = await apiFetch('/api/productos', {
+                method: 'POST',
+                body: JSON.stringify({ codigo, descripcion, precio: parseFloat(precio) || 0 })
+            });
+            if (!rProd) return;
+            if (!rProd.success) { showError(rProd.message); return; }
+
+            // 2. Registrar el vencimiento
+            const rVenc = await apiFetch('/api/vencimientos', {
+                method: 'POST',
+                body: JSON.stringify({
+                    codigo_producto:   codigo,
+                    descripcion,
+                    fecha_vencimiento: fecha,
+                    cantidad_unidades: parseInt(cantidad) || 1,
+                    ubicacion_pasillo: ubicacion,
+                    usuario_registro:  currentUser.nombre
+                })
+            });
+            if (!rVenc) return;
+
+            if (rVenc.success) {
+                cerrarModal();
+                showSuccess(`✅ Producto creado y vencimiento registrado.`);
+                resetForm();
+            } else {
+                showError(rVenc.message);
+            }
+        } catch {
+            showError('Error de conexión.');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // Opción 2: Registrar vencimiento sin guardar en catálogo
+    async function usarSinCatalogo() {
+        const codigo   = document.getElementById('codigo-producto').value.trim().toUpperCase();
+        const fecha    = document.getElementById('nuevo-fecha').value;
+        const cantidad = document.getElementById('nuevo-cantidad').value;
+        const ubicacion= document.getElementById('nuevo-ubicacion').value.trim();
+        const desc     = document.getElementById('nuevo-descripcion').value.trim().toUpperCase() || codigo;
+
+        if (!fecha) { showError('La fecha de vencimiento es requerida.'); return; }
+
+        showLoading(true);
+        try {
+            const data = await apiFetch('/api/vencimientos', {
+                method: 'POST',
+                body: JSON.stringify({
+                    codigo_producto:   codigo,
+                    descripcion:       desc,
+                    fecha_vencimiento: fecha,
+                    cantidad_unidades: parseInt(cantidad) || 1,
+                    ubicacion_pasillo: ubicacion,
+                    usuario_registro:  currentUser.nombre
+                })
+            });
+            if (!data) return;
+
+            if (data.success) {
+                cerrarModal();
+                showSuccess('✅ Vencimiento registrado sin guardar en catálogo.');
+                resetForm();
+            } else {
+                showError(data.message);
+            }
+        } catch {
+            showError('Error de conexión.');
+        } finally {
+            showLoading(false);
+        }
+    }
+
+    // ── REGISTRAR VENCIMIENTO (producto ya en catálogo) ──────
+    document.getElementById('form-vencimiento').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        showLoading(true);
+        try {
+            const data = await apiFetch('/api/vencimientos', {
+                method: 'POST',
+                body: JSON.stringify({
+                    codigo_producto:   currentProductCode,
+                    descripcion:       currentProductDesc,
+                    fecha_vencimiento: document.getElementById('fecha-vencimiento').value,
+                    cantidad_unidades: parseInt(document.getElementById('cantidad').value) || 1,
+                    ubicacion_pasillo: document.getElementById('ubicacion').value,
+                    lote:              document.getElementById('lote').value,
+                    observaciones:     document.getElementById('observaciones').value,
+                    usuario_registro:  currentUser.nombre
+                })
+            });
+            if (!data) return;
+            if (data.success) {
+                showSuccess('✅ Vencimiento registrado exitosamente.');
+                resetForm();
+            } else {
+                showError(data.message || 'Error al registrar.');
+            }
+        } catch {
+            showError('Error de conexión.');
+        } finally {
+            showLoading(false);
+        }
+    });
+
+    // ── Helpers ──────────────────────────────────────────────
+    function resetForm() {
+        document.getElementById('form-vencimiento').reset();
+        document.getElementById('codigo-producto').value         = '';
+        document.getElementById('producto-info').style.display   = 'none';
+        document.getElementById('form-vencimiento').style.display = 'none';
+        currentProductCode = null;
+        currentProductDesc = null;
+        document.getElementById('cantidad').value = '1';
+    }
+
+    function showLoading(v) { document.getElementById('loading').style.display = v ? 'block' : 'none'; }
+
+    function showSuccess(msg) {
+        const el = document.getElementById('alert-success');
+        el.textContent  = msg;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 3500);
+    }
+
+    function showError(msg) {
+        const el = document.getElementById('alert-error');
+        el.textContent  = msg;
+        el.style.display = 'block';
+        setTimeout(() => el.style.display = 'none', 3500);
+    }
+</script>
+</body>
+</html>

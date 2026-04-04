@@ -1,0 +1,107 @@
+╔══════════════════════════════════════════════════════════════╗
+║      CONTROL DE VENCIMIENTOS — Planes y Funciones           ║
+║      Referencia para ventas, desarrollo y soporte           ║
+╚══════════════════════════════════════════════════════════════╝
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ PRECIOS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Plan Básico  →  $200 / año   (código comienza con VENC-B...)
+  Plan Pro     →  $400 / año   (código comienza con VENC-P...)
+  Demo         →  7 días gratis, sin código, funciones básicas
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ FUNCIONES POR PLAN
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+                                          BÁSICO    PRO
+                                         --------  --------
+ REGISTRO Y CONTROL
+  Registrar productos con fecha venc.      ✅        ✅
+  Módulo móvil (escaneo desde celular)     ✅        ✅
+  Alertas visuales en pantalla             ✅        ✅
+    · Crítico (rojo)                       ✅        ✅
+    · Advertencia (amarillo)               ✅        ✅
+    · Preventivo (azul)                    ✅        ✅
+  Dashboard con resumen de alertas         ✅        ✅
+  Retirar productos vencidos               ✅        ✅
+  Historial de retiros                     ✅        ✅
+
+ CATÁLOGO DE PRODUCTOS
+  Importar desde Excel (.xlsx)             ✅        ✅
+  Importar desde CSV / TXT                 ✅        ✅
+  Crear/editar productos manualmente       ✅        ✅
+
+ USUARIOS
+  Múltiples usuarios con roles             ✅        ✅
+    · Rol pasillo (solo registra)          ✅        ✅
+    · Rol supervisor (retira productos)    ✅        ✅
+    · Rol admin (acceso total)             ✅        ✅
+  Activar / desactivar usuarios            ✅        ✅
+  Cambio de contraseña propio              ❌        ✅  (*)
+
+ NOTIFICACIONES
+  Alertas por WhatsApp / SMS               ❌        ✅
+  Envío diario a hora programada           ❌        ✅
+  Múltiples destinos de notificación       ❌        ✅  (*)
+  Historial de mensajes enviados           ❌        ✅  (*)
+
+ REPORTES
+  Reporte PDF mensual de vencimientos      ❌        ✅  (*)
+  Exportar a Excel                         ❌        ✅  (*)
+  Envío de reporte por correo              ❌        ✅  (*)
+
+ SISTEMA
+  Base de datos embebida (sin servidor)    ✅        ✅
+  Demo de 7 días                           ✅        ✅
+  Licencia anual con activación            ✅        ✅
+  Backup / descarga de base de datos       ❌        ✅  (*)
+  Funciona como .exe (sin instalar Node)   ✅        ✅
+  Soporte para Windows 10/11               ✅        ✅
+
+  (*) = pendiente de implementar (ver FUTURAS_MEJORAS.txt)
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ SECTORES QUE PUEDE USAR LA APP
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  ✅ Supermercados y mini súpers
+  ✅ Farmacias
+  ✅ Distribuidoras de alimentos
+  ✅ Tiendas de conveniencia
+  ✅ Almacenes y despensas
+  ✅ Cualquier negocio que maneje productos con fecha de vencimiento
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ CÓMO GENERAR CÓDIGOS DE LICENCIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  Desde la terminal, en la carpeta del proyecto:
+
+  Plan Básico:
+    node generar_licencia.js NOMBRECLIENTE basico 2026
+
+  Plan Pro:
+    node generar_licencia.js NOMBRECLIENTE pro 2026
+
+  Ejemplo:
+    node generar_licencia.js FARMACIA basico 2026
+    → VENC-BFAR-XXXX-2026
+
+    node generar_licencia.js SUPERMERCADO pro 2026
+    → VENC-PSUP-XXXX-2026
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ NOTAS PARA VENDEDORES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+  · El instalador es el mismo para ambos planes.
+  · El plan se activa con el código de licencia.
+  · Si el cliente quiere subir de Básico a Pro, solo necesita
+    un nuevo código. No hay que reinstalar nada.
+  · El demo dura 7 días y tiene las funciones del plan Básico.
+  · Para solicitar un código contactar a Jhony Lorenzo:
+    jhonnylorenzo@gmail.com
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

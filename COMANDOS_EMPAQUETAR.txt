@@ -1,0 +1,67 @@
+COMANDOS PARA EMPAQUETAR - Control de Vencimientos
+====================================================
+
+Ejecutar todos estos comandos en CMD dentro de la carpeta Vencimientos.
+(Abrir CMD como Administrador en C:\Users\Jhony\Documents\Vencimientos)
+
+
+PASO 1 - Borrar dist anterior (si existe):
+------------------------------------------
+rmdir /S /Q dist
+
+
+PASO 2 - Crear carpeta dist:
+-----------------------------
+mkdir dist
+
+
+PASO 3 - Empaquetar el .exe:
+-----------------------------
+"C:\Users\Jhony\AppData\Roaming\npm\pkg.cmd" server.js --targets node18-win-x64 --output dist\ControlVencimientos.exe --compress GZip
+
+(Este paso tarda varios minutos la primera vez)
+
+
+PASO 4 - Copiar archivos necesarios:
+-------------------------------------
+xcopy "public" "dist\public" /E /I /Q
+mkdir "dist\node_modules\sql.js\dist"
+copy "node_modules\sql.js\dist\sql-wasm.wasm" "dist\node_modules\sql.js\dist\"
+mkdir "dist\data"
+
+
+PASO 5 - Crear INICIAR.bat:
+-----------------------------
+echo @echo off > "dist\INICIAR.bat"
+echo cd /d "%%~dp0" >> "dist\INICIAR.bat"
+echo start "" /B ControlVencimientos.exe >> "dist\INICIAR.bat"
+echo timeout /t 3 /nobreak ^>nul >> "dist\INICIAR.bat"
+echo start "" https://localhost:3002 >> "dist\INICIAR.bat"
+
+
+PASO 6 - Crear DETENER.bat:
+-----------------------------
+echo @echo off > "dist\DETENER.bat"
+echo taskkill /F /IM ControlVencimientos.exe ^>nul 2^>^&1 >> "dist\DETENER.bat"
+echo echo Servidor detenido. >> "dist\DETENER.bat"
+
+
+LISTO - Verificar contenido de dist:
+--------------------------------------
+dir dist\
+
+
+====================================================
+NOTAS IMPORTANTES:
+- NO copiar el archivo .env a dist\ (no es necesario)
+- NO copiar licencia.dat ni vencimientos.db (el cliente arranca limpio)
+- El cliente recibe solo la carpeta dist\
+- Archivos que son SOLO TUYOS (no compartir):
+    generar_licencia.js
+    resetear_licencia.js
+    landing.html
+    Propuesta Comercial.docx
+    PLANES_Y_FUNCIONES.txt
+    FUTURAS_MEJORAS.txt
+    COMANDOS_EMPAQUETAR.txt
+====================================================

@@ -1,0 +1,43 @@
+╔══════════════════════════════════════════════════════════════╗
+║        CONTROL DE VENCIMIENTOS — Futuras Mejoras            ║
+║        Lista para planificar próximas versiones             ║
+╚══════════════════════════════════════════════════════════════╝
+
+Todas estas mejoras están pensadas para el Plan Pro ($400/año).
+Revisar con Jhony antes de implementar cualquiera.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ MEJORAS PENDIENTES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] 1. REPORTES (PDF / Excel)
+    Generar un reporte mensual de vencimientos para imprimir
+    o enviar por correo. Incluir resumen por estado: críticos,
+    advertencia, retirados, etc.
+
+[ ] 2. MÚLTIPLES DESTINOS DE NOTIFICACIÓN
+    Enviar la alerta diaria a más de un número a la vez.
+    Útil cuando hay varios supervisores o dueños.
+
+[ ] 3. HISTORIAL DE NOTIFICACIONES
+    Registro de cada mensaje enviado: fecha, hora, canal,
+    cuántos productos se reportaron. Para auditoría.
+
+[ ] 4. CAMBIO DE CONTRASEÑA DESDE LA APP
+    Que cada usuario pueda cambiar su propia clave sin
+    que el admin tenga que hacerlo por él.
+
+[ ] 5. BACKUP DE BASE DE DATOS
+    Botón para descargar el archivo .db como respaldo.
+    También podría programarse automáticamente.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ IDEAS A EVALUAR (no confirmadas)
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+[ ] Envío de reporte por correo electrónico (SMTP)
+[ ] Dashboard con gráficas (barras por mes, por categoría)
+[ ] Soporte para múltiples sucursales en una sola app
+[ ] App móvil nativa (Android) en vez de web
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

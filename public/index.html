@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Vencimientos — Sistema de Vencimientos</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2ecc71 0%, #f39c12 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        /* ── Pantalla de licencia ── */
+        #pantallaLicencia {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+            max-width: 460px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .lic-header {
+            background: #1a7a3e;
+            color: white;
+            padding: 28px 30px 22px;
+            text-align: center;
+        }
+        .lic-header h2 { font-size: 22px; margin-bottom: 4px; }
+        .lic-header p  { font-size: 13px; opacity: .85; }
+        .lic-body { padding: 28px 30px; }
+        .lic-icon  { font-size: 52px; text-align: center; margin-bottom: 14px; }
+        .lic-msg   { text-align: center; color: #444; font-size: 15px; margin-bottom: 22px; line-height: 1.5; }
+        .lic-msg strong { color: #c0392b; }
+
+        .lic-input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            letter-spacing: 2px;
+            text-align: center;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            transition: border-color .25s;
+        }
+        .lic-input:focus { outline: none; border-color: #2ecc71; }
+        .lic-input.error { border-color: #e74c3c; }
+        .lic-error { color: #e74c3c; font-size: 13px; text-align: center; min-height: 18px; margin-bottom: 10px; }
+
+        .btn-activar {
+            width: 100%;
+            padding: 13px;
+            background: #1a7a3e;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background .25s;
+            margin-bottom: 10px;
+        }
+        .btn-activar:hover { background: #145f30; }
+        .btn-demo {
+            width: 100%;
+            padding: 10px;
+            background: transparent;
+            color: #666;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all .25s;
+        }
+        .btn-demo:hover { background: #f5f5f5; }
+
+        .lic-contacto {
+            margin-top: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #888;
+            border-top: 1px solid #eee;
+            padding-top: 16px;
+        }
+        .lic-contacto a { color: #1a7a3e; text-decoration: none; font-weight: bold; }
+
+        /* Barra de estado de licencia */
+        #barraLicencia {
+            display: none;
+            text-align: center;
+            font-size: 12px;
+            padding: 6px 14px;
+            border-radius: 0 0 20px 20px;
+            font-weight: 600;
+        }
+        .barra-activa  { background: #d4edda; color: #155724; }
+        .barra-demo    { background: #fff3cd; color: #856404; }
+        .barra-vencida { background: #f8d7da; color: #721c24; }
+
+        /* ── Pantalla principal ── */
+        #pantallaPrincipal {
+            display: none;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-width: 500px;
+            width: 100%;
+            overflow: hidden;
+        }
+        .app-header {
+            background: #1a7a3e;
+            color: white;
+            padding: 24px 30px;
+            text-align: center;
+        }
+        .app-header h1 { font-size: 24px; margin-bottom: 4px; }
+        .app-header p  { font-size: 13px; opacity: .85; }
+
+        .modules { padding: 28px 24px; display: flex; flex-direction: column; gap: 16px; }
+
+        .module-card {
+            border-radius: 14px;
+            padding: 24px;
+            cursor: pointer;
+            transition: transform .25s, box-shadow .25s;
+            text-decoration: none;
+            color: white;
+            display: block;
+        }
+        .module-card:hover { transform: translateY(-4px); box-shadow: 0 10px 28px rgba(0,0,0,0.18); }
+        .module-card.mobile  { background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%); }
+        .module-card.desktop { background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%); }
+
+        .module-icon  { font-size: 42px; margin-bottom: 10px; }
+        .module-title { font-size: 20px; font-weight: bold; margin-bottom: 6px; }
+        .module-desc  { font-size: 13px; opacity: .9; }
+
+        .app-footer {
+            padding: 14px 24px;
+            border-top: 1px solid #f0f0f0;
+        }
+
+        @media (max-width: 480px) {
+            .lic-body, .modules { padding: 20px 16px; }
+            .app-header, .lic-header { padding: 20px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ══════════════════════════════════════
+         PANTALLA DE LICENCIA (demo/vencida)
+    ══════════════════════════════════════ -->
+    <div id="pantallaLicencia">
+        <div class="lic-header">
+            <h2>🏷️ Control de Vencimientos</h2>
+            <p>Sistema de Control de Vencimientos</p>
+        </div>
+        <div class="lic-body">
+            <div class="lic-icon" id="licIcono">⏳</div>
+            <div class="lic-msg"  id="licMensaje">Cargando...</div>
+
+            <input  type="text" id="inputCodigo" class="lic-input"
+                    placeholder="VENC-XXXX-XXXX-XXXX" maxlength="19"
+                    oninput="autoformatCodigo(this)">
+            <div class="lic-error" id="licError"></div>
+
+            <button class="btn-activar" onclick="activarLicencia()">🔓 Activar Control de Vencimientos</button>
+            <button class="btn-demo"    id="btnContinuarDemo" onclick="continuarDemo()" style="display:none">
+                Continuar con demo
+            </button>
+
+            <div class="lic-contacto">
+                Para obtener su código de activación contáctese con:<br>
+                <strong>Jhony Lorenzo</strong> &nbsp;·&nbsp;
+                <a href="https://wa.me/50769326695" target="_blank">📲 +507 6932-6695</a><br>
+                <a href="mailto:jhonnylorenzo@gmail.com">jhonnylorenzo@gmail.com</a>
+            </div>
+        </div>
+        <div id="barraLicencia"></div>
+    </div>
+
+    <!-- ══════════════════════════════════════
+         PANTALLA PRINCIPAL (módulos)
+    ══════════════════════════════════════ -->
+    <div id="pantallaPrincipal">
+        <div class="app-header">
+            <h1>🏪 Control de Vencimientos</h1>
+            <p>Sistema de Control de Vencimientos</p>
+        </div>
+
+        <div class="modules">
+            <a href="mobile.html" class="module-card mobile">
+                <div class="module-icon">📱</div>
+                <div class="module-title">Módulo Móvil</div>
+                <div class="module-desc">
+                    Para personal de pasillo · Escanea productos y registra fechas de vencimiento
+                </div>
+            </a>
+            <a href="desktop.html" class="module-card desktop">
+                <div class="module-icon">🖥️</div>
+                <div class="module-title">Módulo Desktop</div>
+                <div class="module-desc">
+                    Para computadoras · Dashboard, alertas, reportes y gestión completa
+                </div>
+            </a>
+        </div>
+
+        <div class="app-footer">
+            <div id="barraLicenciaPrincipal" style="font-size:12px; text-align:center; color:#666;"></div>
+        </div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+
+        // ── Auto-formato del código VENC-XXXX-XXXX-XXXX ──────────
+        function autoformatCodigo(input) {
+            let raw = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            let fmt = '';
+            for (let i = 0; i < raw.length && i < 16; i++) {
+                if (i === 4 || i === 8 || i === 12) fmt += '-';
+                fmt += raw[i];
+            }
+            input.value = fmt;
+            input.classList.remove('error');
+            document.getElementById('licError').textContent = '';
+        }
+
+        // ── Verificar licencia al cargar ─────────────────────────
+        async function verificarLicencia() {
+            try {
+                const r    = await fetch(`${API}/api/licencia`);
+                const data = await r.json();
+                const info = data.licencia;
+
+                const barra     = document.getElementById('barraLicencia');
+                const icono     = document.getElementById('licIcono');
+                const mensaje   = document.getElementById('licMensaje');
+                const btnDemo   = document.getElementById('btnContinuarDemo');
+
+                if (info.estado === 'activa') {
+                    // Licencia activa → mostrar pantalla principal directamente
+                    mostrarPantallaPrincipal(info);
+                    return;
+                }
+
+                // Demo o vencida → mostrar pantalla de licencia
+                document.getElementById('pantallaLicencia').style.display = 'block';
+
+                if (info.estado === 'demo') {
+                    icono.textContent   = '⏳';
+                    mensaje.innerHTML   = `<strong>Período de prueba</strong><br>
+                                           Te quedan <strong>${info.dias_restantes} día(s)</strong> de demo.<br>
+                                           Vence el <strong>${info.fecha_vence}</strong>`;
+                    btnDemo.style.display = 'block';
+                    barra.className       = 'barra-demo';
+                    barra.textContent     = `⏳ Demo · ${info.dias_restantes} día(s) restante(s)`;
+                } else {
+                    icono.textContent   = '🔒';
+                    mensaje.innerHTML   = `<strong>Período de prueba vencido</strong><br>
+                                           El acceso venció el <strong>${info.fecha_vence}</strong>.<br>
+                                           Ingrese su código de activación para continuar.`;
+                    btnDemo.style.display = 'none';
+                    barra.className       = 'barra-vencida';
+                    barra.textContent     = `🔒 Licencia vencida el ${info.fecha_vence}`;
+                }
+
+                barra.style.display = 'block';
+
+            } catch (err) {
+                console.error('Error verificando licencia:', err);
+                // Si el servidor no responde, mostrar pantalla de licencia como precaución
+                document.getElementById('pantallaLicencia').style.display = 'block';
+                document.getElementById('licMensaje').textContent = 'No se pudo conectar al servidor.';
+            }
+        }
+
+        // ── Activar licencia ─────────────────────────────────────
+        async function activarLicencia() {
+            const codigo = document.getElementById('inputCodigo').value.trim();
+            const errEl  = document.getElementById('licError');
+
+            if (!codigo) {
+                errEl.textContent = 'Ingrese el código de activación.';
+                document.getElementById('inputCodigo').classList.add('error');
+                return;
+            }
+
+            try {
+                const r    = await fetch(`${API}/api/licencia/activar`, {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body:    JSON.stringify({ codigo })
+                });
+                const data = await r.json();
+
+                if (data.ok) {
+                    alert(`✅ ${data.mensaje}`);
+                    verificarLicencia();
+                } else {
+                    errEl.textContent = data.mensaje;
+                    document.getElementById('inputCodigo').classList.add('error');
+                }
+            } catch {
+                errEl.textContent = 'Error de conexión. Intente nuevamente.';
+            }
+        }
+
+        // ── Continuar con demo ───────────────────────────────────
+        function continuarDemo() {
+            document.getElementById('pantallaLicencia').style.display = 'none';
+            mostrarPantallaPrincipal({ estado: 'demo', mensaje: document.getElementById('barraLicencia').textContent });
+        }
+
+        // ── Mostrar pantalla principal ───────────────────────────
+        function mostrarPantallaPrincipal(info) {
+            document.getElementById('pantallaPrincipal').style.display = 'block';
+            const barra = document.getElementById('barraLicenciaPrincipal');
+
+            if (info.estado === 'activa') {
+                barra.innerHTML = `<span style="color:#155724">✔ Licencia activa · vence el ${info.fecha_vence}</span>`;
+            } else if (info.estado === 'demo') {
+                barra.innerHTML = `<span style="color:#856404">⏳ ${info.mensaje}</span>`;
+            }
+        }
+
+        // Iniciar al cargar
+        verificarLicencia();
+    </script>
+</body>
+</html>
