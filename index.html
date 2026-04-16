@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Vencimientos — Software para Supermercados y Farmacias</title>
+    <meta name="description" content="Sistema digital para controlar fechas de vencimiento en supermercados, mini supers y farmacias. Alertas automáticas, escáner móvil, notificaciones WhatsApp/SMS.">
+    <style>
+        /* ── RESET & BASE ─────────────────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --verde:        #27ae60;
+            --verde-oscuro: #1a7a3e;
+            --verde-claro:  #e8f5ee;
+            --verde-muted:  #2ecc71;
+            --rojo:         #e74c3c;
+            --gris:         #f8f9fa;
+            --gris-texto:   #666;
+            --negro:        #222;
+            --blanco:       #ffffff;
+            --radio:        12px;
+            --sombra:       0 4px 24px rgba(0,0,0,0.08);
+        }
+        html { scroll-behavior: smooth; }
+        body { font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; color: var(--negro); line-height: 1.6; }
+        a { text-decoration: none; color: inherit; }
+        img { max-width: 100%; }
+        .container { max-width: 1100px; margin: 0 auto; padding: 0 24px; }
+
+        /* ── NAVBAR ───────────────────────────────────────────── */
+        nav {
+            position: sticky; top: 0; z-index: 999;
+            background: rgba(255,255,255,0.96);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e5e5e5;
+            padding: 14px 0;
+        }
+        .nav-inner { display: flex; justify-content: space-between; align-items: center; }
+        .nav-logo { font-size: 20px; font-weight: 800; color: var(--verde-oscuro); }
+        .nav-logo span { color: var(--verde); }
+        .nav-links { display: flex; gap: 28px; font-size: 14px; font-weight: 500; color: #444; }
+        .nav-links a:hover { color: var(--verde); }
+        .nav-cta {
+            background: var(--verde); color: white;
+            padding: 9px 22px; border-radius: 50px;
+            font-size: 14px; font-weight: 600;
+            transition: background .2s, transform .15s;
+        }
+        .nav-cta:hover { background: var(--verde-oscuro); transform: translateY(-1px); }
+
+        /* ── HERO ─────────────────────────────────────────────── */
+        .hero {
+            background: linear-gradient(135deg, var(--verde-oscuro) 0%, #219150 50%, var(--verde) 100%);
+            color: white;
+            padding: 96px 0 80px;
+            position: relative;
+            overflow: hidden;
+        }
+        .hero::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+        .hero-inner { display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center; position: relative; }
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.18);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 6px 16px; border-radius: 50px;
+            font-size: 13px; font-weight: 600;
+            margin-bottom: 20px;
+            letter-spacing: 0.5px;
+        }
+        .hero h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 900; line-height: 1.1; margin-bottom: 20px; }
+        .hero h1 span { color: #a8edca; }
+        .hero p { font-size: 18px; opacity: 0.9; margin-bottom: 36px; line-height: 1.65; }
+        .hero-btns { display: flex; gap: 14px; flex-wrap: wrap; }
+        .btn-primary-hero {
+            background: white; color: var(--verde-oscuro);
+            padding: 14px 32px; border-radius: 50px;
+            font-weight: 700; font-size: 16px;
+            transition: all .2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-primary-hero:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.2); }
+        .btn-secondary-hero {
+            border: 2px solid rgba(255,255,255,0.6); color: white;
+            padding: 14px 32px; border-radius: 50px;
+            font-weight: 600; font-size: 15px;
+            transition: all .2s;
+            display: inline-flex; align-items: center; gap: 8px;
+        }
+        .btn-secondary-hero:hover { background: rgba(255,255,255,0.1); border-color: white; }
+        .hero-visual {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 20px;
+            padding: 28px;
+            backdrop-filter: blur(8px);
+        }
+        .dashboard-mock { font-size: 13px; }
+        .dm-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+        .dm-title { font-weight: 700; font-size: 15px; }
+        .dm-cards { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px; }
+        .dm-card { background: rgba(255,255,255,0.12); border-radius: 10px; padding: 14px 12px; }
+        .dm-card-num { font-size: 28px; font-weight: 800; }
+        .dm-card-lbl { font-size: 11px; opacity: 0.8; }
+        .dm-card.red .dm-card-num  { color: #ff8080; }
+        .dm-card.yel .dm-card-num  { color: #ffd27d; }
+        .dm-card.blue .dm-card-num { color: #82cfff; }
+        .dm-card.grn .dm-card-num  { color: #a8edca; }
+        .dm-row { background: rgba(255,255,255,0.08); border-radius: 8px; padding: 10px 12px; margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .dm-badge { font-size: 11px; padding: 3px 10px; border-radius: 50px; font-weight: 600; }
+        .badge-red  { background: rgba(231,76,60,0.3); color: #ff8080; }
+        .badge-yel  { background: rgba(241,196,15,0.3); color: #ffd27d; }
+        .badge-grn  { background: rgba(46,204,113,0.3); color: #a8edca; }
+
+        /* ── STATS BAR ───────────────────────────────────────── */
+        .stats-bar { background: var(--negro); color: white; padding: 28px 0; }
+        .stats-inner { display: flex; justify-content: space-around; flex-wrap: wrap; gap: 20px; text-align: center; }
+        .stat-item .num { font-size: 36px; font-weight: 900; color: var(--verde); }
+        .stat-item .lbl { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+
+        /* ── SECCIONES GENÉRICAS ─────────────────────────────── */
+        section { padding: 80px 0; }
+        section.alt { background: var(--gris); }
+        .section-tag { display: inline-block; color: var(--verde); font-weight: 700; font-size: 13px; letter-spacing: 1px; text-transform: uppercase; margin-bottom: 10px; }
+        .section-title { font-size: clamp(26px, 4vw, 40px); font-weight: 800; color: var(--negro); margin-bottom: 16px; }
+        .section-sub { font-size: 17px; color: var(--gris-texto); max-width: 580px; line-height: 1.7; }
+        .section-head { text-align: center; margin-bottom: 56px; }
+        .section-head .section-sub { margin: 0 auto; }
+
+        /* ── PROBLEMA / SOLUCIÓN ─────────────────────────────── */
+        .problema-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; align-items: start; }
+        .problema-col h3 { font-size: 18px; font-weight: 700; margin-bottom: 16px; padding-bottom: 10px; border-bottom: 3px solid; }
+        .col-mal h3 { color: var(--rojo); border-color: var(--rojo); }
+        .col-bien h3 { color: var(--verde); border-color: var(--verde); }
+        .problema-item { display: flex; gap: 12px; margin-bottom: 14px; align-items: flex-start; }
+        .problema-item .icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+        .problema-item p { font-size: 15px; color: #444; }
+
+        /* ── FUNCIONALIDADES ─────────────────────────────────── */
+        .feat-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+        .feat-card {
+            background: white; border-radius: var(--radio);
+            padding: 28px; box-shadow: var(--sombra);
+            border-top: 4px solid var(--verde);
+            transition: transform .2s, box-shadow .2s;
+        }
+        .feat-card:hover { transform: translateY(-4px); box-shadow: 0 12px 36px rgba(0,0,0,0.12); }
+        .feat-icon { font-size: 36px; margin-bottom: 14px; }
+        .feat-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; color: var(--negro); }
+        .feat-card p { font-size: 14px; color: var(--gris-texto); line-height: 1.65; }
+
+        /* ── MÓDULOS ─────────────────────────────────────────── */
+        .modulos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; }
+        .modulo-card {
+            background: white; border-radius: var(--radio);
+            padding: 32px; box-shadow: var(--sombra);
+        }
+        .modulo-header { display: flex; align-items: center; gap: 14px; margin-bottom: 20px; }
+        .modulo-badge { width: 52px; height: 52px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 24px; }
+        .modulo-badge.movil   { background: #e8f5ee; }
+        .modulo-badge.desktop { background: #e8f0ff; }
+        .modulo-card h3 { font-size: 19px; font-weight: 700; }
+        .modulo-card .sub { font-size: 13px; color: var(--gris-texto); }
+        .modulo-list { list-style: none; }
+        .modulo-list li { display: flex; gap: 10px; padding: 8px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; color: #444; }
+        .modulo-list li:last-child { border: none; }
+        .modulo-list li::before { content: '✓'; color: var(--verde); font-weight: 700; flex-shrink: 0; }
+
+        /* ── PRECIOS ─────────────────────────────────────────── */
+        .precios-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 32px; max-width: 820px; margin: 0 auto; }
+        .precio-card {
+            background: white; border-radius: var(--radio);
+            padding: 32px 28px; box-shadow: var(--sombra);
+            text-align: center; position: relative;
+            border: 2px solid transparent;
+            transition: border-color .2s, transform .2s;
+        }
+        .precio-card:hover { transform: translateY(-4px); border-color: var(--verde); }
+        .precio-card.featured {
+            border-color: var(--verde);
+            transform: scale(1.04);
+        }
+        .precio-card.featured:hover { transform: scale(1.06) translateY(-4px); }
+        .featured-badge {
+            position: absolute; top: -14px; left: 50%; transform: translateX(-50%);
+            background: var(--verde); color: white;
+            padding: 4px 20px; border-radius: 50px;
+            font-size: 12px; font-weight: 700; white-space: nowrap;
+        }
+        .plan-nombre { font-size: 20px; font-weight: 800; color: var(--negro); margin-bottom: 4px; }
+        .plan-desc { font-size: 13px; color: var(--gris-texto); margin-bottom: 20px; }
+        .plan-precio { font-size: 48px; font-weight: 900; color: var(--verde-oscuro); line-height: 1; }
+        .plan-precio sup { font-size: 22px; font-weight: 700; vertical-align: top; margin-top: 8px; display: inline-block; }
+        .plan-precio .pago-unico { display: block; font-size: 12px; color: var(--gris-texto); font-weight: 400; margin-top: 4px; }
+        .plan-mant { background: var(--verde-claro); border-radius: 8px; padding: 8px 14px; margin: 16px 0 20px; font-size: 13px; color: var(--verde-oscuro); font-weight: 600; }
+        .plan-lista { list-style: none; text-align: left; margin-bottom: 28px; }
+        .plan-lista li { display: flex; gap: 10px; padding: 7px 0; font-size: 14px; color: #444; border-bottom: 1px solid #f5f5f5; }
+        .plan-lista li:last-child { border: none; }
+        .plan-lista li::before { content: '✓'; color: var(--verde); font-weight: 700; flex-shrink: 0; }
+        .btn-plan {
+            display: block; width: 100%;
+            padding: 13px; border-radius: 50px;
+            font-weight: 700; font-size: 15px;
+            transition: all .2s; cursor: pointer; border: none;
+        }
+        .btn-plan-outline { background: transparent; border: 2px solid var(--verde); color: var(--verde); }
+        .btn-plan-outline:hover { background: var(--verde); color: white; }
+        .btn-plan-solid { background: var(--verde); color: white; }
+        .btn-plan-solid:hover { background: var(--verde-oscuro); transform: translateY(-1px); }
+
+        /* ── PROCESO ─────────────────────────────────────────── */
+        .proceso-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; position: relative; }
+        .proceso-grid::before {
+            content: '';
+            position: absolute;
+            top: 28px; left: 10%; right: 10%;
+            height: 2px; background: var(--verde-claro);
+            z-index: 0;
+        }
+        .proceso-step { text-align: center; position: relative; z-index: 1; }
+        .proceso-num {
+            width: 56px; height: 56px; border-radius: 50%;
+            background: var(--verde); color: white;
+            font-size: 20px; font-weight: 800;
+            display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 14px;
+            box-shadow: 0 4px 16px rgba(39,174,96,0.35);
+        }
+        .proceso-step h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+        .proceso-step p { font-size: 12px; color: var(--gris-texto); line-height: 1.5; }
+
+        /* ── GARANTÍAS ───────────────────────────────────────── */
+        .garantias-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; }
+        .garantia-card {
+            background: white; border-radius: var(--radio);
+            padding: 24px; box-shadow: var(--sombra);
+            text-align: center;
+        }
+        .garantia-icon { font-size: 40px; margin-bottom: 12px; }
+        .garantia-card h4 { font-size: 15px; font-weight: 700; margin-bottom: 6px; }
+        .garantia-card p { font-size: 13px; color: var(--gris-texto); line-height: 1.55; }
+
+        /* ── CTA FINAL ───────────────────────────────────────── */
+        .cta-final {
+            background: linear-gradient(135deg, var(--verde-oscuro) 0%, var(--verde) 100%);
+            color: white; text-align: center; padding: 80px 24px;
+        }
+        .cta-final h2 { font-size: clamp(26px, 4vw, 40px); font-weight: 900; margin-bottom: 14px; }
+        .cta-final p { font-size: 18px; opacity: 0.9; margin-bottom: 36px; }
+        .cta-btns { display: flex; justify-content: center; gap: 16px; flex-wrap: wrap; }
+        .btn-wa {
+            background: #25d366; color: white;
+            padding: 16px 36px; border-radius: 50px;
+            font-weight: 700; font-size: 17px;
+            display: inline-flex; align-items: center; gap: 10px;
+            transition: all .2s;
+        }
+        .btn-wa:hover { background: #1fb355; transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+        .btn-email {
+            background: rgba(255,255,255,0.15);
+            border: 2px solid rgba(255,255,255,0.5);
+            color: white;
+            padding: 16px 36px; border-radius: 50px;
+            font-weight: 600; font-size: 16px;
+            display: inline-flex; align-items: center; gap: 10px;
+            transition: all .2s;
+        }
+        .btn-email:hover { background: rgba(255,255,255,0.25); border-color: white; }
+
+        /* ── FOOTER ──────────────────────────────────────────── */
+        footer { background: #111; color: #aaa; padding: 36px 0; text-align: center; font-size: 14px; }
+        footer strong { color: white; }
+        footer .footer-links { display: flex; justify-content: center; gap: 24px; margin-top: 12px; flex-wrap: wrap; }
+        footer .footer-links a { color: var(--verde); }
+
+        /* ── RESPONSIVE ─────────────────────────────────────── */
+        @media (max-width: 768px) {
+            .nav-links { display: none; }
+            .hero-inner { grid-template-columns: 1fr; }
+            .hero-visual { display: none; }
+            .problema-grid, .modulos-grid { grid-template-columns: 1fr; }
+            .precios-grid { grid-template-columns: 1fr; }
+            .precio-card.featured { transform: none; }
+            .proceso-grid { grid-template-columns: 1fr 1fr; }
+            .proceso-grid::before { display: none; }
+            section { padding: 56px 0; }
+        }
+        @media (max-width: 480px) {
+            .proceso-grid { grid-template-columns: 1fr; }
+            .dm-cards { grid-template-columns: repeat(2, 1fr); }
+        }
+    </style>
+</head>
+<body>
+
+<!-- ── NAVBAR ─────────────────────────────────────────────────── -->
+<nav>
+    <div class="container nav-inner">
+        <div class="nav-logo">Control de <span>Vencimientos</span></div>
+        <div class="nav-links">
+            <a href="#funcionalidades">Funcionalidades</a>
+            <a href="#precios">Precios</a>
+            <a href="#proceso">Cómo funciona</a>
+            <a href="#como-instalar">Instalar Demo</a>
+            <a href="#contacto">Contacto</a>
+        </div>
+        <a href="https://wa.me/50769326695?text=Hola%2C%20me%20interesa%20el%20sistema%20Control%20de%20Vencimientos" target="_blank" class="nav-cta">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 32 32" fill="currentColor" style="vertical-align:middle;margin-right:6px;"><path d="M16 0C7.163 0 0 7.163 0 16c0 2.833.738 5.494 2.031 7.808L0 32l8.418-2.007A15.93 15.93 0 0016 32c8.837 0 16-7.163 16-16S24.837 0 16 0zm0 29.333a13.27 13.27 0 01-6.765-1.849l-.485-.288-5.004 1.194 1.215-4.87-.317-.499A13.24 13.24 0 012.667 16C2.667 8.636 8.636 2.667 16 2.667S29.333 8.636 29.333 16 23.364 29.333 16 29.333zm7.27-9.862c-.398-.199-2.355-1.162-2.719-1.295-.364-.133-.63-.199-.895.199-.266.398-1.029 1.295-1.261 1.561-.232.266-.464.299-.862.1-.398-.199-1.681-.619-3.203-1.977-1.184-1.057-1.983-2.362-2.215-2.76-.232-.398-.025-.613.174-.811.179-.178.398-.464.597-.696.199-.232.266-.398.398-.664.133-.266.066-.497-.033-.696-.1-.199-.895-2.157-1.227-2.953-.323-.775-.651-.67-.895-.682-.232-.011-.497-.014-.763-.014-.266 0-.696.1-1.061.497-.364.398-1.394 1.362-1.394 3.321s1.427 3.853 1.626 4.119c.199.266 2.808 4.287 6.803 6.014.951.411 1.692.656 2.271.839.954.304 1.823.261 2.509.158.765-.114 2.355-.963 2.688-1.893.333-.93.333-1.727.232-1.893-.099-.166-.364-.266-.762-.465z"/></svg>
+          WhatsApp</a>
+    </div>
+</nav>
+
+<!-- ── HERO ──────────────────────────────────────────────────── -->
+<section class="hero">
+    <div class="container hero-inner">
+        <div>
+            <div class="hero-badge">🏪 Para supermercados · farmacias · distribuidoras</div>
+            <h1>Deja de perder dinero por productos <span>vencidos</span></h1>
+            <p>Software para supermercados, farmacias y mini supers que le avisa automáticamente — en su <strong>celular por WhatsApp o SMS</strong> — qué productos están por vencer, antes de que sea demasiado tarde.</p>
+            <div class="hero-btns">
+                <a href="#precios" class="btn-primary-hero">💰 Ver Precios</a>
+                <a href="https://github.com/jhonny2261/vencapp/releases/download/v1.0/ControlVencimientos-Demo.zip" class="btn-secondary-hero">⬇ Descargar Demo Gratis</a>
+            </div>
+        </div>
+        <div class="hero-visual">
+            <div class="dashboard-mock">
+                <div class="dm-header">
+                    <span class="dm-title">📊 Panel de Control</span>
+                    <span style="font-size:11px;opacity:.7">Hoy · 10 Mar</span>
+                </div>
+                <div class="dm-cards">
+                    <div class="dm-card red"><div class="dm-card-num">7</div><div class="dm-card-lbl">🔴 Críticos (≤3 días)</div></div>
+                    <div class="dm-card yel"><div class="dm-card-num">14</div><div class="dm-card-lbl">🟡 Advertencia (≤7 días)</div></div>
+                    <div class="dm-card blue"><div class="dm-card-num">28</div><div class="dm-card-lbl">🔵 Preventivos (≤15 días)</div></div>
+                    <div class="dm-card grn"><div class="dm-card-num">312</div><div class="dm-card-lbl">✅ Registros activos</div></div>
+                </div>
+                <div style="font-size:11px;opacity:.7;margin-bottom:8px">⚠️ Alertas urgentes</div>
+                <div class="dm-row"><span>LECHE ENTERA 1L</span><span class="dm-badge badge-red">Vence mañana</span></div>
+                <div class="dm-row"><span>YOGURT FRESA 200G</span><span class="dm-badge badge-red">Vence en 2 días</span></div>
+                <div class="dm-row"><span>QUESO BLANCO 500G</span><span class="dm-badge badge-yel">Vence en 5 días</span></div>
+                <div class="dm-row"><span>JAMÓN DE PAVO 250G</span><span class="dm-badge badge-yel">Vence en 6 días</span></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── COMO INSTALAR ──────────────────────────────────────────── -->
+<section id="como-instalar" style="padding:60px 0;background:#f9fafb;border-top:1px solid #e8f5ee;">
+    <div class="container">
+        <div class="section-head">
+            <span class="section-tag">Sin instalación complicada</span>
+            <h2 class="section-title">¿Cómo empezar? Es muy fácil</h2>
+            <p class="section-sub">No necesita instalar nada adicional. Funciona directo en su computadora con Windows.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:24px;max-width:1100px;margin:0 auto;">
+            <div style="background:white;border-radius:16px;padding:32px 24px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,0.07);border:2px solid #e8f5ee;">
+                <div style="width:56px;height:56px;background:var(--verde);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:white;font-weight:900;">1</div>
+                <div style="font-size:36px;margin-bottom:12px;">⬇</div>
+                <h3 style="font-size:16px;font-weight:800;color:#1a1a1a;margin-bottom:8px;">Descargue el demo</h3>
+                <p style="font-size:14px;color:#666;line-height:1.6;">Haga clic en "Descargar Demo Gratis" y guarde el archivo ZIP en su computadora.</p>
+            </div>
+            <div style="background:white;border-radius:16px;padding:32px 24px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,0.07);border:2px solid #e8f5ee;">
+                <div style="width:56px;height:56px;background:var(--verde);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:white;font-weight:900;">2</div>
+                <div style="font-size:36px;margin-bottom:12px;">📂</div>
+                <h3 style="font-size:16px;font-weight:800;color:#1a1a1a;margin-bottom:8px;">Descomprima el archivo</h3>
+                <p style="font-size:14px;color:#666;line-height:1.6;">Clic derecho sobre el ZIP → <strong>"Extraer todo"</strong>. Se crea una carpeta con el sistema.</p>
+            </div>
+            <div style="background:white;border-radius:16px;padding:32px 24px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,0.07);border:2px solid #e8f5ee;">
+                <div style="width:56px;height:56px;background:var(--verde);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:24px;color:white;font-weight:900;">3</div>
+                <div style="font-size:36px;margin-bottom:12px;">▶</div>
+                <h3 style="font-size:16px;font-weight:800;color:#1a1a1a;margin-bottom:8px;">Ejecute INICIAR.bat</h3>
+                <p style="font-size:14px;color:#666;line-height:1.6;">Dentro de la carpeta, doble clic en <strong>INICIAR.bat</strong>. El sistema abre solo en su navegador.</p>
+            </div>
+            <div style="background:white;border-radius:16px;padding:32px 24px;text-align:center;box-shadow:0 2px 16px rgba(0,0,0,0.07);border:2px dashed #1B6B3A;">
+                <div style="width:56px;height:56px;background:#e8f5ee;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 16px;font-size:26px;color:#1B6B3A;font-weight:900;">?</div>
+                <div style="font-size:36px;margin-bottom:12px;">💬</div>
+                <h3 style="font-size:16px;font-weight:800;color:#1a1a1a;margin-bottom:8px;">¿Problemas o dudas?</h3>
+                <p style="font-size:14px;color:#666;line-height:1.6;margin-bottom:16px;">Escríbanos y con gusto le ayudamos a poner el sistema en marcha.</p>
+                <a href="https://wa.me/50769326695?text=Hola%2C%20descargué%20el%20demo%20y%20necesito%20ayuda%20para%20instalarlo" target="_blank" style="display:inline-block;background:#1B6B3A;color:white;padding:10px 22px;border-radius:8px;font-size:13px;font-weight:700;text-decoration:none;">📲 Escríbanos aquí</a>
+            </div>
+        </div>
+        <div style="text-align:center;margin-top:36px;padding:20px;background:#e8f5ee;border-radius:12px;max-width:620px;margin:36px auto 0;">
+            <p style="font-size:15px;color:#1B6B3A;font-weight:600;">✅ No requiere instalación &nbsp;·&nbsp; ✅ Funciona sin internet &nbsp;·&nbsp; ✅ 7 días de prueba gratis</p>
+        </div>
+        <div style="text-align:center;margin-top:28px;">
+            <a href="https://github.com/jhonny2261/vencapp/releases/download/v1.0/ControlVencimientos-Demo.zip" class="btn-primary-hero" style="display:inline-block;">⬇ Descargar Demo Gratis</a>
+        </div>
+    </div>
+</section>
+
+<!-- ── STATS BAR ──────────────────────────────────────────────── -->
+<div class="stats-bar">
+    <div class="container stats-inner">
+        <div class="stat-item"><div class="num">7 días</div><div class="lbl">Demo gratuita completamente funcional</div></div>
+        <div class="stat-item"><div class="num">100%</div><div class="lbl">Local · Sin internet requerido</div></div>
+        <div class="stat-item"><div class="num">3 roles</div><div class="lbl">Empleado · Supervisor · Administrador</div></div>
+        <div class="stat-item"><div class="num">24 hrs</div><div class="lbl">Instalación rápida en su negocio</div></div>
+    </div>
+</div>
+
+<!-- ── PROBLEMA ───────────────────────────────────────────────── -->
+<section>
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">El Problema</div>
+            <h2 class="section-title">¿Reconoce alguna de estas situaciones?</h2>
+            <p class="section-sub">La mayoría de supermercados controla las fechas de vencimiento a mano. Eso cuesta caro.</p>
+        </div>
+        <div class="problema-grid">
+            <div class="problema-col col-mal">
+                <h3>❌ Sin el sistema</h3>
+                <div class="problema-item"><span class="icon">📋</span><p>Revisión manual por pasillo, cuadernos o Excel que nadie actualiza.</p></div>
+                <div class="problema-item"><span class="icon">🗑️</span><p>Productos que llegan a la góndola ya vencidos sin que nadie lo notara.</p></div>
+                <div class="problema-item"><span class="icon">⏱️</span><p>Empleados perdiendo 2-3 horas semanales revisando fecha por fecha.</p></div>
+                <div class="problema-item"><span class="icon">💸</span><p>Pérdidas económicas por mercadería botada y multas por inspecciones.</p></div>
+                <div class="problema-item"><span class="icon">😤</span><p>Clientes insatisfechos que llevan productos vencidos a sus casas.</p></div>
+            </div>
+            <div class="problema-col col-bien">
+                <h3>✅ Con Control de Vencimientos</h3>
+                <div class="problema-item"><span class="icon">🔔</span><p>Alertas automáticas antes de que el producto venza (3, 7 y 15 días antes).</p></div>
+                <div class="problema-item"><span class="icon">📱</span><p>Empleados registran desde el celular escaneando el código de barras.</p></div>
+                <div class="problema-item"><span class="icon">📊</span><p>Dashboard en tiempo real con todos los productos críticos visibles al instante.</p></div>
+                <div class="problema-item"><span class="icon">📂</span><p>Historial digital completo de retiros para auditorías e inspecciones.</p></div>
+                <div class="problema-item"><span class="icon">😊</span><p>Clientes satisfechos y reputación protegida ante la competencia.</p></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── FUNCIONALIDADES ────────────────────────────────────────── -->
+<section class="alt" id="funcionalidades">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">Funcionalidades</div>
+            <h2 class="section-title">Todo lo que necesita en un solo sistema</h2>
+            <p class="section-sub">Diseñado para cualquier negocio con productos perecederos: supermercados, mini supers, farmacias y distribuidoras.</p>
+        </div>
+        <div class="feat-grid">
+            <div class="feat-card">
+                <div class="feat-icon">📱</div>
+                <h3>Módulo Móvil</h3>
+                <p>Sus empleados registran productos desde el celular escaneando el código de barras. Funciona en cualquier smartphone conectado al WiFi del negocio.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">🖥️</div>
+                <h3>Panel Desktop</h3>
+                <p>Supervisores y administradores tienen un panel completo con dashboard, alertas, historial de retiros y configuración desde la computadora.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">🔔</div>
+                <h3>Alertas por Niveles</h3>
+                <p>Tres niveles configurables: Crítico (rojo), Advertencia (amarillo) y Preventivo (azul). Usted decide cuántos días antes recibir cada alerta.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">📊</div>
+                <h3>Dashboard en Tiempo Real</h3>
+                <p>Vista instantánea de todos los productos críticos, con conteos por nivel de alerta y tabla de los más urgentes.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">📥</div>
+                <h3>Importación de Catálogo</h3>
+                <p>Cargue su catálogo completo desde Excel, CSV o TXT. Incluye plantilla lista para descargar y llenar.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">👥</div>
+                <h3>Gestión de Usuarios</h3>
+                <p>Tres roles: Empleado de pasillo, Supervisor y Administrador. Cada uno con permisos específicos según su responsabilidad.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">📂</div>
+                <h3>Historial de Retiros</h3>
+                <p>Registro completo de todo lo retirado: quién lo retiró, cuándo, por qué y cuántas unidades. Ideal para auditorías.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">🔒</div>
+                <h3>Seguridad y Privacidad</h3>
+                <p>Sus datos se guardan localmente en su computadora, nunca en la nube. Acceso con usuario y contraseña cifrada para cada empleado.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">📲</div>
+                <h3>Notificaciones WhatsApp / SMS</h3>
+                <p>Reciba cada mañana en su celular un resumen de los productos críticos. Sin tener que abrir el sistema — la alerta llega directamente a su WhatsApp o por SMS.</p>
+            </div>
+            <div class="feat-card">
+                <div class="feat-icon">⚙️</div>
+                <h3>Sin complicaciones técnicas</h3>
+                <p>No requiere internet para funcionar. Sin mensualidades de servidores externos. Se instala una vez y funciona sin mantenimiento técnico complejo.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── SECTORES ────────────────────────────────────────────────── -->
+<section>
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">¿Para quién es?</div>
+            <h2 class="section-title">Cualquier negocio con productos que vencen</h2>
+            <p class="section-sub">Si vende productos con fecha de vencimiento, este sistema es para usted.</p>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;">
+            <div style="background:white;border-radius:12px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.07);text-align:center;">
+                <div style="font-size:48px;margin-bottom:12px;">🛒</div>
+                <h3 style="font-size:17px;font-weight:700;margin-bottom:8px;">Supermercados</h3>
+                <p style="font-size:14px;color:#666;">Control por pasillo, alertas masivas, múltiples empleados registrando simultáneamente.</p>
+            </div>
+            <div style="background:white;border-radius:12px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.07);text-align:center;">
+                <div style="font-size:48px;margin-bottom:12px;">💊</div>
+                <h3 style="font-size:17px;font-weight:700;margin-bottom:8px;">Farmacias</h3>
+                <p style="font-size:14px;color:#666;">Control estricto de medicamentos, historial de retiros para auditorías sanitarias y cumplimiento regulatorio.</p>
+            </div>
+            <div style="background:white;border-radius:12px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.07);text-align:center;">
+                <div style="font-size:48px;margin-bottom:12px;">🏪</div>
+                <h3 style="font-size:17px;font-weight:700;margin-bottom:8px;">Mini Supers</h3>
+                <p style="font-size:14px;color:#666;">Simple y económico. Un empleado lo maneja todo desde el celular. Sin necesidad de técnicos.</p>
+            </div>
+            <div style="background:white;border-radius:12px;padding:28px;box-shadow:0 2px 12px rgba(0,0,0,0.07);text-align:center;">
+                <div style="font-size:48px;margin-bottom:12px;">🚚</div>
+                <h3 style="font-size:17px;font-weight:700;margin-bottom:8px;">Distribuidoras</h3>
+                <p style="font-size:14px;color:#666;">Control de lotes en bodega, historial completo por producto y alertas antes de despachar mercadería próxima a vencer.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── MÓDULOS ─────────────────────────────────────────────────── -->
+<section>
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">Los Módulos</div>
+            <h2 class="section-title">Un sistema, dos formas de acceder</h2>
+        </div>
+        <div class="modulos-grid">
+            <div class="modulo-card">
+                <div class="modulo-header">
+                    <div class="modulo-badge movil">📱</div>
+                    <div>
+                        <h3>Módulo Móvil</h3>
+                        <div class="sub">Para empleados de pasillo</div>
+                    </div>
+                </div>
+                <ul class="modulo-list">
+                    <li>Escanear código de barras con la cámara del celular</li>
+                    <li>El sistema muestra nombre y precio automáticamente</li>
+                    <li>Registrar fecha de vencimiento, cantidad y pasillo</li>
+                    <li>Crear productos nuevos si no existen en el catálogo</li>
+                    <li>Acceso desde cualquier celular Android o iPhone</li>
+                    <li>Inicio de sesión individual con contraseña</li>
+                </ul>
+            </div>
+            <div class="modulo-card">
+                <div class="modulo-header">
+                    <div class="modulo-badge desktop">🖥️</div>
+                    <div>
+                        <h3>Módulo Desktop</h3>
+                        <div class="sub">Para supervisores y administradores</div>
+                    </div>
+                </div>
+                <ul class="modulo-list">
+                    <li>Dashboard con resumen completo de alertas activas</li>
+                    <li>Listado de vencimientos con filtros y estados</li>
+                    <li>Gestión del catálogo de productos (CRUD + importación)</li>
+                    <li>Registro y seguimiento de retiros con motivo y observaciones</li>
+                    <li>Gestión de usuarios: crear, activar y desactivar accesos</li>
+                    <li>Configuración de niveles y días de alerta personalizados</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CAPTURAS DEL SISTEMA ──────────────────────────────────────── -->
+<section class="alt" id="capturas">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">El Sistema por Dentro</div>
+            <h2 class="section-title">Vea cómo funciona en la vida real</h2>
+            <p class="section-sub">Pantallas reales del sistema. Lo que verá desde el primer día.</p>
+        </div>
+
+        <!-- Fila 1: licencia + login -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <img src="screenshots/01_licencia_menu.png" alt="Pantalla de inicio — selección de módulo" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Pantalla de inicio</div>
+                    <div style="font-size:13px;color:#666;">Selección de módulo — Desktop o Móvil</div>
+                </div>
+            </div>
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <img src="screenshots/02_login_desktop.png" alt="Login módulo desktop" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Acceso desktop</div>
+                    <div style="font-size:13px;color:#666;">Login seguro para supervisores y administradores</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila 2: dashboard + alertas -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <img src="screenshots/03_dashboard.png" alt="Dashboard principal" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Dashboard</div>
+                    <div style="font-size:13px;color:#666;">Resumen en tiempo real — críticos, advertencias y vencidos</div>
+                </div>
+            </div>
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <img src="screenshots/05_alertas.png" alt="Alertas de vencimiento" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Alertas de vencimiento</div>
+                    <div style="font-size:13px;color:#666;">Productos clasificados por nivel de urgencia con acción inmediata</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila 3: vencimientos + móvil -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <img src="screenshots/07_vencimientos.png" alt="Gestión de vencimientos" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Gestión de vencimientos</div>
+                    <div style="font-size:13px;color:#666;">Historial completo con filtros por fecha, estado y nivel</div>
+                </div>
+            </div>
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+                <img src="screenshots/13_modulo_movil.png" alt="Módulo móvil" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Módulo móvil</div>
+                    <div style="font-size:13px;color:#666;">Registro desde el celular — escaneo o código manual</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── PRECIOS ─────────────────────────────────────────────────── -->
+<section class="alt" id="precios">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">Planes y Precios</div>
+            <h2 class="section-title">Licencia anual · Sin costos ocultos</h2>
+            <p class="section-sub">Un solo pago por año. Actualizaciones y soporte incluidos en el Plan Pro. Sin mensualidades ni sorpresas.</p>
+        </div>
+        <div class="precios-grid">
+
+            <!-- BÁSICO -->
+            <div class="precio-card">
+                <div class="plan-nombre">Plan Básico</div>
+                <div class="plan-desc">Control completo de vencimientos</div>
+                <div class="plan-precio"><sup>$</sup>200<span class="pago-unico">por año · Licencia 12 meses</span></div>
+                <div class="plan-mant">✅ Registro y alertas incluidos</div>
+                <ul class="plan-lista">
+                    <li>Módulo móvil para empleados (celular)</li>
+                    <li>Módulo desktop para supervisores</li>
+                    <li>Alertas visuales: crítico, advertencia, preventivo</li>
+                    <li>Importar catálogo desde Excel / CSV / TXT</li>
+                    <li>Historial completo de retiros</li>
+                    <li>Gestión de usuarios con 3 roles</li>
+                    <li>App instalada en su computadora</li>
+                    <li>Capacitación básica (1 hora)</li>
+                    <li>Soporte por WhatsApp en horario comercial</li>
+                </ul>
+                <button class="btn-plan btn-plan-outline" onclick="window.open('https://wa.me/50769326695?text=Me%20interesa%20el%20Plan%20B%C3%A1sico%20de%20Control%20de%20Vencimientos','_blank')">Consultar ahora</button>
+            </div>
+
+            <!-- PRO (DESTACADO) -->
+            <div class="precio-card featured">
+                <div class="featured-badge">⭐ Recomendado</div>
+                <div class="plan-nombre">Plan Pro</div>
+                <div class="plan-desc">Todo incluido, sin preocupaciones</div>
+                <div class="plan-precio"><sup>$</sup>400<span class="pago-unico">por año · Licencia 12 meses</span></div>
+                <div class="plan-mant">✅ Todo el Plan Básico, más:</div>
+                <ul class="plan-lista">
+                    <li><strong>📲 Notificaciones por WhatsApp o SMS</strong></li>
+                    <li><strong>Alerta diaria automática a su celular</strong></li>
+                    <li><strong>Catálogo de productos cargado por nosotros</strong></li>
+                    <li><strong>Capacitación completa (2 horas)</strong></li>
+                    <li><strong>Soporte prioritario por WhatsApp</strong></li>
+                    <li><strong>Actualizaciones y nuevas funciones incluidas</strong></li>
+                    <li>Todo lo del Plan Básico incluido</li>
+                </ul>
+                <button class="btn-plan btn-plan-solid" onclick="window.open('https://wa.me/50769326695?text=Me%20interesa%20el%20Plan%20Pro%20de%20Control%20de%20Vencimientos','_blank')">Lo Quiero</button>
+            </div>
+
+        </div>
+        <p style="text-align:center;margin-top:28px;color:#888;font-size:14px;">
+            💡 Ambos planes incluyen <strong>7 días de prueba gratuita</strong> antes de pagar. <a href="https://wa.me/50769326695" target="_blank" style="color:var(--verde);font-weight:600;">Escríbanos y le mostramos el sistema.</a>
+        </p>
+    </div>
+</section>
+
+<!-- ── PROCESO ─────────────────────────────────────────────────── -->
+<section id="proceso">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">Cómo Funciona</div>
+            <h2 class="section-title">Listo en un día hábil</h2>
+            <p class="section-sub">El proceso de implementación es rápido y sencillo. Nosotros nos encargamos de todo.</p>
+        </div>
+        <div class="proceso-grid">
+            <div class="proceso-step">
+                <div class="proceso-num">1</div>
+                <h4>Reunión inicial</h4>
+                <p>Evaluamos su negocio y elegimos el plan ideal para usted.</p>
+            </div>
+            <div class="proceso-step">
+                <div class="proceso-num">2</div>
+                <h4>Instalación</h4>
+                <p>Instalamos el sistema en su computadora de forma presencial o remota.</p>
+            </div>
+            <div class="proceso-step">
+                <div class="proceso-num">3</div>
+                <h4>Configuración</h4>
+                <p>Creamos usuarios, cargamos el catálogo y configuramos las alertas.</p>
+            </div>
+            <div class="proceso-step">
+                <div class="proceso-num">4</div>
+                <h4>Capacitación</h4>
+                <p>Entrenamos a empleados y supervisores para usar el sistema correctamente.</p>
+            </div>
+            <div class="proceso-step">
+                <div class="proceso-num">5</div>
+                <h4>Seguimiento</h4>
+                <p>Permanecemos disponibles las primeras semanas para resolver cualquier duda.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── GARANTÍAS ──────────────────────────────────────────────── -->
+<section class="alt">
+    <div class="container">
+        <div class="section-head">
+            <div class="section-tag">Garantías</div>
+            <h2 class="section-title">Compre con total confianza</h2>
+        </div>
+        <div class="garantias-grid">
+            <div class="garantia-card">
+                <div class="garantia-icon">🛡️</div>
+                <h4>Garantía 90 días</h4>
+                <p>Si el sistema presenta fallos técnicos en los primeros 90 días, lo reparamos sin costo adicional.</p>
+            </div>
+            <div class="garantia-card">
+                <div class="garantia-icon">🆓</div>
+                <h4>Demo 7 días</h4>
+                <p>Pruebe el sistema completamente funcional durante 7 días antes de pagar. Sin tarjeta de crédito.</p>
+            </div>
+            <div class="garantia-card">
+                <div class="garantia-icon">📲</div>
+                <h4>Soporte WhatsApp</h4>
+                <p>Atención directa por WhatsApp en horario comercial para resolver dudas y problemas rápidamente.</p>
+            </div>
+            <div class="garantia-card">
+                <div class="garantia-icon">🔐</div>
+                <h4>Sus datos son suyos</h4>
+                <p>La base de datos vive en su computadora. Nadie más tiene acceso a su información de inventario.</p>
+            </div>
+            <div class="garantia-card">
+                <div class="garantia-icon">🔄</div>
+                <h4>Actualizaciones continuas</h4>
+                <p>Los clientes con mantenimiento activo reciben todas las mejoras y nuevas funciones sin costo extra.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── CTA FINAL ───────────────────────────────────────────────── -->
+<div class="cta-final" id="contacto">
+    <div class="container">
+        <h2>¿Listo para eliminar las pérdidas por productos vencidos?</h2>
+        <p>Contáctenos hoy y reciba una demostración sin costo ni compromiso.</p>
+        <div class="cta-btns">
+            <a href="https://wa.me/50769326695?text=Hola%20Jhony%2C%20me%20interesa%20una%20demo%20de%20Control%20de%20Vencimientos" target="_blank" class="btn-wa">
+                <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" viewBox="0 0 32 32" fill="currentColor" style="vertical-align:middle;margin-right:8px;"><path d="M16 0C7.163 0 0 7.163 0 16c0 2.833.738 5.494 2.031 7.808L0 32l8.418-2.007A15.93 15.93 0 0016 32c8.837 0 16-7.163 16-16S24.837 0 16 0zm0 29.333a13.27 13.27 0 01-6.765-1.849l-.485-.288-5.004 1.194 1.215-4.87-.317-.499A13.24 13.24 0 012.667 16C2.667 8.636 8.636 2.667 16 2.667S29.333 8.636 29.333 16 23.364 29.333 16 29.333zm7.27-9.862c-.398-.199-2.355-1.162-2.719-1.295-.364-.133-.63-.199-.895.199-.266.398-1.029 1.295-1.261 1.561-.232.266-.464.299-.862.1-.398-.199-1.681-.619-3.203-1.977-1.184-1.057-1.983-2.362-2.215-2.76-.232-.398-.025-.613.174-.811.179-.178.398-.464.597-.696.199-.232.266-.398.398-.664.133-.266.066-.497-.033-.696-.1-.199-.895-2.157-1.227-2.953-.323-.775-.651-.67-.895-.682-.232-.011-.497-.014-.763-.014-.266 0-.696.1-1.061.497-.364.398-1.394 1.362-1.394 3.321s1.427 3.853 1.626 4.119c.199.266 2.808 4.287 6.803 6.014.951.411 1.692.656 2.271.839.954.304 1.823.261 2.509.158.765-.114 2.355-.963 2.688-1.893.333-.93.333-1.727.232-1.893-.099-.166-.364-.266-.762-.465z"/></svg>
+                Escribir por WhatsApp
+            </a>
+            <a href="mailto:info@sistemadevencimientos.com?subject=Consulta%20Sistema%20de%20Vencimientos" class="btn-email">
+                ✉️ info@sistemadevencimientos.com
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── FOOTER ──────────────────────────────────────────────────── -->
+<footer>
+    <div class="container">
+        <p><strong>Control de Vencimientos</strong> · Software para supermercados, farmacias y mini supers · 2026</p>
+        <p style="margin-top:6px;">Desarrollado por <strong>Jhony Lorenzo</strong> · <a href="mailto:info@sistemadevencimientos.com">info@sistemadevencimientos.com</a></p>
+        <div class="footer-links">
+            <a href="#funcionalidades">Funcionalidades</a>
+            <a href="#precios">Precios</a>
+            <a href="#proceso">Proceso</a>
+            <a href="https://wa.me/50769326695" target="_blank">WhatsApp</a>
+        </div>
+    </div>
+</footer>
+
+<!-- ── LIGHTBOX ─────────────────────────────────────────────────── -->
+<div id="lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9999;align-items:center;justify-content:center;cursor:zoom-out;" onclick="this.style.display='none'">
+    <img id="lightbox-img" src="" alt="" style="max-width:92vw;max-height:92vh;border-radius:12px;box-shadow:0 8px 40px rgba(0,0,0,0.5);pointer-events:none;">
+    <span style="position:absolute;top:20px;right:28px;color:white;font-size:32px;font-weight:300;line-height:1;cursor:pointer;" onclick="document.getElementById('lightbox').style.display='none'">✕</span>
+</div>
+
+<script>
+// Lightbox para capturas del sistema
+document.querySelectorAll('#capturas img').forEach(img => {
+    img.style.cursor = 'zoom-in';
+    img.addEventListener('click', function() {
+        const lb = document.getElementById('lightbox');
+        document.getElementById('lightbox-img').src = this.src;
+        document.getElementById('lightbox-img').alt = this.alt;
+        lb.style.display = 'flex';
+    });
+});
+// Cerrar con ESC
+document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') document.getElementById('lightbox').style.display = 'none';
+});
+</script>
+
+</body>
+</html>
