@@ -1,0 +1,45 @@
+# ── Código fuente (NUNCA sube a GitHub) ─────────────
+server.js
+lanzador.js
+cargar_demo.js
+generar_licencia.js
+importar_catalogo.js
+resetear_licencia.js
+instalador.nsi
+package.json
+package-lock.json
+core/
+public/
+data/
+
+# ── Configuración sensible ───────────────────────────
+.env
+*.env
+
+# ── Dependencias ────────────────────────────────────
+node_modules/
+
+# ── Archivos empaquetados / compilados ───────────────
+dist/
+dist.rar
+*.exe
+*.zip
+*.rar
+
+# ── Base de datos y datos del sistema ───────────────
+*.db
+*.sqlite
+bdFull.csv
+
+# ── Archivos de instalación y herramientas ───────────
+instalador_icon.ico
+EMPAQUETAR.bat
+INSTALAR.bat
+INICIAR_SERVIDOR.bat
+detener.bat
+
+# ── Logs ─────────────────────────────────────────────
+*.log
+logs/
+
+# ── 

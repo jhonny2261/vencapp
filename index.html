@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Vencimientos — Software para Supermercados y Farmacias</title>
-    <meta name="description" content="Sistema digital para controlar fechas de vencimiento en supermercados, mini supers y farmacias. Alertas automáticas, escáner móvil, notificaciones WhatsApp/SMS.">
+    <meta name="description" content="Sistema digital para controlar fechas de vencimiento en supermercados, mini supers y farmacias. Alertas automáticas, escáner móvil, notificaciones por Telegram.">
     <style>
         /* ── RESET & BASE ─────────────────────────────────────── */
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
@@ -320,7 +320,7 @@
         <div>
             <div class="hero-badge">🏪 Para supermercados · farmacias · distribuidoras</div>
             <h1>Deja de perder dinero por productos <span>vencidos</span></h1>
-            <p>Software para supermercados, farmacias y mini supers que le avisa automáticamente — en su <strong>celular por WhatsApp o SMS</strong> — qué productos están por vencer, antes de que sea demasiado tarde.</p>
+            <p>Software para supermercados, farmacias y mini supers que le avisa automáticamente — en su <strong>celular por Telegram</strong> — qué productos están por vencer, antes de que sea demasiado tarde.</p>
             <div class="hero-btns">
                 <a href="#precios" class="btn-primary-hero">💰 Ver Precios</a>
                 <a href="https://github.com/jhonny2261/vencapp/releases/download/v1.0/ControlVencimientos-Demo.zip" class="btn-secondary-hero">⬇ Descargar Demo Gratis</a>
@@ -482,8 +482,8 @@
             </div>
             <div class="feat-card">
                 <div class="feat-icon">📲</div>
-                <h3>Notificaciones WhatsApp / SMS</h3>
-                <p>Reciba cada mañana en su celular un resumen de los productos críticos. Sin tener que abrir el sistema — la alerta llega directamente a su WhatsApp o por SMS.</p>
+                <h3>Notificaciones por Telegram</h3>
+                <p>Reciba cada mañana en su celular un resumen de los productos críticos. Sin tener que abrir el sistema — la alerta llega directamente a su Telegram, gratis y sin configuración complicada.</p>
             </div>
             <div class="feat-card">
                 <div class="feat-icon">⚙️</div>
@@ -579,59 +579,95 @@
         <div class="section-head">
             <div class="section-tag">El Sistema por Dentro</div>
             <h2 class="section-title">Vea cómo funciona en la vida real</h2>
-            <p class="section-sub">Pantallas reales del sistema. Lo que verá desde el primer día.</p>
+            <p class="section-sub">Pantallas reales del sistema. Lo que verá desde el primer día. Haga clic en cualquier imagen para ampliarla.</p>
         </div>
 
-        <!-- Fila 1: licencia + login -->
+        <!-- Fila 1: inicio + login -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-                <img src="screenshots/01_licencia_menu.png" alt="Pantalla de inicio — selección de módulo" style="width:100%;display:block;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
+                <img src="screenshots/12_configuracion.png" alt="Pantalla de inicio — selección de módulo" style="width:100%;display:block;">
                 <div style="padding:16px 20px;">
                     <div style="font-weight:700;color:#222;margin-bottom:4px;">Pantalla de inicio</div>
-                    <div style="font-size:13px;color:#666;">Selección de módulo — Desktop o Móvil</div>
+                    <div style="font-size:13px;color:#666;">Selección de módulo — Desktop para PC o Móvil para celular</div>
                 </div>
             </div>
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
                 <img src="screenshots/02_login_desktop.png" alt="Login módulo desktop" style="width:100%;display:block;">
                 <div style="padding:16px 20px;">
-                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Acceso desktop</div>
-                    <div style="font-size:13px;color:#666;">Login seguro para supervisores y administradores</div>
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Acceso seguro</div>
+                    <div style="font-size:13px;color:#666;">Login con usuario y contraseña — acceso por roles</div>
                 </div>
             </div>
         </div>
 
-        <!-- Fila 2: dashboard + alertas -->
+        <!-- Fila 2: dashboard + dashboard urgentes -->
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
                 <img src="screenshots/03_dashboard.png" alt="Dashboard principal" style="width:100%;display:block;">
                 <div style="padding:16px 20px;">
-                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Dashboard</div>
-                    <div style="font-size:13px;color:#666;">Resumen en tiempo real — críticos, advertencias y vencidos</div>
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Dashboard principal</div>
+                    <div style="font-size:13px;color:#666;">Resumen en tiempo real — conteo de críticos, advertencias y vencidos</div>
                 </div>
             </div>
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
+                <img src="screenshots/04_dashboard_b.png" alt="Dashboard con productos urgentes" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Productos urgentes</div>
+                    <div style="font-size:13px;color:#666;">Vista rápida de los productos que requieren atención inmediata</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila 3: alertas -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
                 <img src="screenshots/05_alertas.png" alt="Alertas de vencimiento" style="width:100%;display:block;">
                 <div style="padding:16px 20px;">
                     <div style="font-weight:700;color:#222;margin-bottom:4px;">Alertas de vencimiento</div>
-                    <div style="font-size:13px;color:#666;">Productos clasificados por nivel de urgencia con acción inmediata</div>
+                    <div style="font-size:13px;color:#666;">Productos clasificados por nivel: VENCIDO · CRÍTICO · ADVERTENCIA</div>
+                </div>
+            </div>
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
+                <img src="screenshots/06_alertas_b.png" alt="Alertas — tabla completa" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Detalle de alertas</div>
+                    <div style="font-size:13px;color:#666;">Código, descripción, días restantes, ubicación y botón de retiro</div>
                 </div>
             </div>
         </div>
 
-        <!-- Fila 3: vencimientos + móvil -->
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-                <img src="screenshots/07_vencimientos.png" alt="Gestión de vencimientos" style="width:100%;display:block;">
+        <!-- Fila 4: historial + importar -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-bottom:24px;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
+                <img src="screenshots/07_vencimientos.png" alt="Historial de retiros" style="width:100%;display:block;">
                 <div style="padding:16px 20px;">
-                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Gestión de vencimientos</div>
-                    <div style="font-size:13px;color:#666;">Historial completo con filtros por fecha, estado y nivel</div>
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Historial de retiros</div>
+                    <div style="font-size:13px;color:#666;">Registro completo de cada producto retirado, motivo y usuario responsable</div>
                 </div>
             </div>
-            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);">
-                <img src="screenshots/13_modulo_movil.png" alt="Módulo móvil" style="width:100%;display:block;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
+                <img src="screenshots/09_productos.png" alt="Importar catálogo de productos" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Importar catálogo</div>
+                    <div style="font-size:13px;color:#666;">Cargue miles de productos desde Excel, CSV o TXT en segundos</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Fila 5: módulo móvil (centrado) -->
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;">
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
+                <img src="screenshots/13_modulo_movil.png" alt="Módulo móvil — escáner de código de barras" style="width:100%;display:block;">
                 <div style="padding:16px 20px;">
                     <div style="font-weight:700;color:#222;margin-bottom:4px;">Módulo móvil</div>
-                    <div style="font-size:13px;color:#666;">Registro desde el celular — escaneo o código manual</div>
+                    <div style="font-size:13px;color:#666;">Registro de vencimientos desde el celular con escáner de código de barras</div>
+                </div>
+            </div>
+            <div style="background:white;border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.08);cursor:zoom-in;">
+                <img src="screenshots/08_vencimientos_b.png" alt="Lista completa de vencimientos" style="width:100%;display:block;">
+                <div style="padding:16px 20px;">
+                    <div style="font-weight:700;color:#222;margin-bottom:4px;">Lista de vencimientos</div>
+                    <div style="font-size:13px;color:#666;">Todos los productos registrados con fechas, estados y filtros avanzados</div>
                 </div>
             </div>
         </div>
@@ -676,7 +712,7 @@
                 <div class="plan-precio"><sup>$</sup>400<span class="pago-unico">por año · Licencia 12 meses</span></div>
                 <div class="plan-mant">✅ Todo el Plan Básico, más:</div>
                 <ul class="plan-lista">
-                    <li><strong>📲 Notificaciones por WhatsApp o SMS</strong></li>
+                    <li><strong>📲 Notificaciones diarias por Telegram</strong></li>
                     <li><strong>Alerta diaria automática a su celular</strong></li>
                     <li><strong>Catálogo de productos cargado por nosotros</strong></li>
                     <li><strong>Capacitación completa (2 horas)</strong></li>
